@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Card, Form, Button, Alert } from 'react-bootstrap'
 import { useAuth } from '../contexts/AuthContext'
 import { Link, useHistory } from 'react-router-dom'
@@ -61,19 +61,21 @@ export default function UpdateProfile() {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').put(file).then(function () {
                 console.log('successfully uploaded')
                 setError("");
-                setProfilePicture();
             })
         }
     }
 
-    function setProfilePicture() {
-        firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
-            setAvatar(url);
-            console.log('successfully loaded profile picture')
-        })
-    }
+    useEffect(() => {
+        if (avatar) {
+            firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
+                setAvatar(url);
+                console.log('successfully loaded profile picture')
+            })
+        } else { 
+            return;
+        }
+    }, [avatar, currentUser.uid])
 
-    setProfilePicture()
 
 
     return (
