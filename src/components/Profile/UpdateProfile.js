@@ -8,10 +8,13 @@ export default function UpdateProfile() {
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
-    const { currentUser, updatePassword, updateEmail } = useAuth() // must be in scopes { signup }
+    const { currentUser, updatePassword, updateEmail } = useAuth()
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const history = useHistory()
+
+    const [avatar, setAvatar] = useState(undefined);
+    const [file, setFile] = useState(null);
 
     function handleSubmit(e) {
         e.preventDefault()
@@ -33,7 +36,7 @@ export default function UpdateProfile() {
 
         Promise.all(promises)
             .then(() => {
-                history.push('/')
+                history.push('/profile')
             })
             .catch(() => {
                 setError('Failed to update Account')
@@ -44,18 +47,33 @@ export default function UpdateProfile() {
 
     }
 
-    let file = {};
-
-    function handleChange(e) {
-        file = e.target.files[0];
+    const handleChange = e => {
+        if (e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
     }
 
-    function handleUpload() {
-        firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').put(file).then(function () {
-            console.log('successfully uploaded')
+    const handleUpload = () => {
+        console.log(file);
+        if (file === null) {
+            setError("No file selected");
+        } else {
+            firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').put(file).then(function () {
+                console.log('successfully uploaded')
+                setError("");
+                setProfilePicture();
+            })
+        }
+    }
+
+    function setProfilePicture() {
+        firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
+            setAvatar(url);
+            console.log('successfully loaded profile picture')
         })
     }
 
+    setProfilePicture()
 
 
     return (
@@ -67,10 +85,18 @@ export default function UpdateProfile() {
                     <Form onSubmit={handleSubmit}>
 
                         <Form.Group id="avatar">
-                            <Form.Label>Avatar</Form.Label>
+                            <Form.Label>Select Profile Picture</Form.Label>
                             <input type="file" onChange={handleChange} />
-                            <button onClick={handleUpload}>Upload</button>
-                            {/* <img src={url || "http://via.placeholder.com/300"} alt="firebase-image" /> */}
+                            <Button className="mt-2" onClick={handleUpload}>Upload</Button>
+                            <div className="profile mt-3">
+                                <img
+                                    src={avatar || "http://via.placeholder.com/300"}
+                                    className="rounded mb-2 mx-auto d-block"
+                                    width="200px"
+                                    height="150px"
+                                    alt="profilePic"
+                                />
+                            </div>
                         </Form.Group>
 
 
@@ -104,7 +130,7 @@ export default function UpdateProfile() {
                 </Card.Body>
             </Card>
             <div className="w-100 text-center mt-2">
-                <Link to="/">Cancel</Link>
+                <Link to="/profile">Cancel</Link>
             </div>
         </>
     )

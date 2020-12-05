@@ -10,7 +10,7 @@ export default function Profile() {
     const { currentUser, logout } = useAuth()
     const history = useHistory()
 
-    const [ avatar, setAvatar ] = useState(undefined);
+    const [avatar, setAvatar] = useState(undefined);
 
     async function handleLogout() {
         setError('')
@@ -27,7 +27,6 @@ export default function Profile() {
         firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
             setAvatar(url);
             console.log('successfully loaded avatar')
-            
         })
     }
 
@@ -40,11 +39,14 @@ export default function Profile() {
                 <Card.Body>
                     <h2 className="text-center mb-4">Profile</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
-                    <div 
-                        className="avatar avatar-128 img-circle img-thumbnail"
-                        // src={avatar || "http://via.placeholder.com/300"} alt="avatar"
-                        >
-                        <img src={avatar || "http://via.placeholder.com/300"} alt="avatar" />
+                    <div className="profile mr-3">
+                    <img
+                        src={avatar || "http://via.placeholder.com/300"}
+                        className="rounded mb-2 mx-auto d-block" 
+                        width="200px"
+                        height="150px"
+                        alt="avatar"
+                    />
                     </div>
                     <strong>Email:</strong> {currentUser.email}
                     <Link to="update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
