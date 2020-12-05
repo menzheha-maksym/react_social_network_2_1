@@ -2,12 +2,15 @@ import React, { useState } from 'react'
 import { Button, Card, Alert } from 'react-bootstrap'
 import { Link, useHistory } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import firebase from '../../firebase'
 
-export default function Dashboard() {
+export default function Profile() {
 
     const [error, setError] = useState("")
     const { currentUser, logout } = useAuth()
     const history = useHistory()
+
+    const [ avatar, setAvatar ] = useState(undefined);
 
     async function handleLogout() {
         setError('')
@@ -20,6 +23,16 @@ export default function Dashboard() {
         }
     }
 
+    function loadAvatar() {
+        firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
+            setAvatar(url);
+            console.log('successfully loaded avatar')
+            
+        })
+    }
+
+    loadAvatar();
+
 
     return (
         <>
@@ -27,6 +40,12 @@ export default function Dashboard() {
                 <Card.Body>
                     <h2 className="text-center mb-4">Profile</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
+                    <div 
+                        className="avatar avatar-128 img-circle img-thumbnail"
+                        // src={avatar || "http://via.placeholder.com/300"} alt="avatar"
+                        >
+                        <img src={avatar || "http://via.placeholder.com/300"} alt="avatar" />
+                    </div>
                     <strong>Email:</strong> {currentUser.email}
                     <Link to="update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
                 </Card.Body>

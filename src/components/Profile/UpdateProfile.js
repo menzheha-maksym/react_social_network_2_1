@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { Card, Form, Button, Alert } from 'react-bootstrap'
 import { useAuth } from '../contexts/AuthContext'
 import { Link, useHistory } from 'react-router-dom'
+import firebase from '../../firebase'
 
 export default function UpdateProfile() {
     const emailRef = useRef();
@@ -43,6 +44,20 @@ export default function UpdateProfile() {
 
     }
 
+    let file = {};
+
+    function handleChange(e) {
+        file = e.target.files[0];
+    }
+
+    function handleUpload() {
+        firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').put(file).then(function () {
+            console.log('successfully uploaded')
+        })
+    }
+
+
+
     return (
         <>
             <Card>
@@ -50,6 +65,15 @@ export default function UpdateProfile() {
                     <h2 className="text-center mb-4">Update Profile</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
+
+                        <Form.Group id="avatar">
+                            <Form.Label>Avatar</Form.Label>
+                            <input type="file" onChange={handleChange} />
+                            <button onClick={handleUpload}>Upload</button>
+                            {/* <img src={url || "http://via.placeholder.com/300"} alt="firebase-image" /> */}
+                        </Form.Group>
+
+
                         <Form.Group id="email">
                             <Form.Label>Email</Form.Label>
                             <Form.Control
