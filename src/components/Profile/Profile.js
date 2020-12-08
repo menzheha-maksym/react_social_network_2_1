@@ -10,7 +10,7 @@ export default function Profile() {
     const { currentUser, logout } = useAuth()
     const history = useHistory()
 
-    const [avatar, setAvatar] = useState(undefined);
+    const [profilePicture, setProfilePicture] = useState(currentUser.photoURL);
 
     async function handleLogout() {
         setError('')
@@ -24,14 +24,15 @@ export default function Profile() {
     }
 
 
+
     useEffect(() => {
-        if (avatar) {
+        if (profilePicture) {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
-                setAvatar(url);
-                console.log('successfully loaded avatar')               
-            })
+                setProfilePicture(url);
+                console.log('successfully loaded profilePicture')
+             })
         } else {
-            return;
+             return;
         }
     })
 
@@ -44,7 +45,7 @@ export default function Profile() {
                     {error && <Alert variant="danger">{error}</Alert>}
                     <div className="profile mr-3">
                         <img
-                            src={avatar || "http://via.placeholder.com/300"}
+                            src={profilePicture || "http://via.placeholder.com/300"}
                             className="rounded mb-2 mx-auto d-block"
                             width="200px"
                             height="150px"
