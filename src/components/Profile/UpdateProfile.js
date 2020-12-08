@@ -8,12 +8,12 @@ export default function UpdateProfile() {
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
-    const { currentUser, updatePassword, updateEmail } = useAuth()
+    const { currentUser, updatePassword, updateEmail, loadProfilePicture, updateProfilePicture } = useAuth()
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const history = useHistory()
 
-    const [avatar, setAvatar] = useState(undefined);
+    const [profilePicture, setProfilePicture] = useState(null);
     const [file, setFile] = useState(null);
 
     function handleSubmit(e) {
@@ -50,6 +50,7 @@ export default function UpdateProfile() {
     const handleChange = e => {
         if (e.target.files[0]) {
             setFile(e.target.files[0]);
+            setProfilePicture(URL.createObjectURL(e.target.files[0]));
         }
     }
 
@@ -59,22 +60,25 @@ export default function UpdateProfile() {
             setError("No file selected");
         } else {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').put(file).then(function () {
-                console.log('successfully uploaded')
+                console.log('successfully uploaded to firebase');
+                updateProfilePicture('users/' + currentUser.uid + '/profile.jpg');
                 setError("");
             })
         }
     }
 
+
     useEffect(() => {
-        if (avatar) {
+
+        if (currentUser.photoURL) {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
-                setAvatar(url);
+                setProfilePicture(url);
                 console.log('successfully loaded profile picture')
             })
-        } else { 
+        } else {
             return;
         }
-    }, [avatar, currentUser.uid])
+    }, [loadProfilePicture])
 
 
 
@@ -85,19 +89,19 @@ export default function UpdateProfile() {
                     <h2 className="text-center mb-4">Update Profile</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
-
-                        <Form.Group id="avatar">
+                        <Form.Group id="profilePicture">
                             <Form.Label>Select Profile Picture</Form.Label>
-                            <input type="file" onChange={handleChange} />
-                            <Button className="mt-2" onClick={handleUpload}>Upload</Button>
+                            <input type="file" accept="image/*" onChange={handleChange} />
                             <div className="profile mt-3">
                                 <img
-                                    src={avatar || "http://via.placeholder.com/300"}
+                                    id="output"
+                                    src={profilePicture || "http://via.placeholder.com/300"}
                                     className="rounded mb-2 mx-auto d-block"
                                     width="200px"
                                     height="150px"
                                     alt="profilePic"
                                 />
+                                <Button className="mt-2" onClick={handleUpload}>Update Profile Picture</Button>
                             </div>
                         </Form.Group>
 
