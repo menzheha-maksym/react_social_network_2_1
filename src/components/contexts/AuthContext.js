@@ -36,6 +36,20 @@ export function AuthProvider({ children }) {
         return currentUser.updatePassword(password)
     }
 
+    function loadProfilePicture(profilePicture) {
+        console.log(currentUser.photoURL);
+        profilePicture = currentUser.photoURL;
+        console.log(profilePicture);
+        return profilePicture;
+ 
+    }
+
+    function updateProfilePicture(profilePicture) {
+        currentUser.updateProfile({ photoURL: profilePicture});
+        console.log("Photo in Database uploaded " + currentUser.photoURL);
+        console.log("currentUser.photoUrl updated")
+    }
+
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
             setCurrentUser(user)
@@ -53,7 +67,9 @@ export function AuthProvider({ children }) {
         logout,
         resetPassword,
         updateEmail,
-        updatePassword
+        updatePassword,
+        loadProfilePicture,
+        updateProfilePicture,
     }
 
     return (
