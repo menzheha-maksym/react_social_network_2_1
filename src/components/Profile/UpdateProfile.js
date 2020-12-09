@@ -5,11 +5,13 @@ import { Link, useHistory } from 'react-router-dom'
 import firebase from '../../firebase'
 
 export default function UpdateProfile() {
+    const usernameRef = useRef(); // Can't perform a React state update 
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
-    const { currentUser, updatePassword, updateEmail, loadProfilePicture, updateProfilePicture } = useAuth()
+    const { currentUser, updatePassword, updateEmail, updateUsername, checkIfUsernameExists, /* loadProfilePicture, */ updateProfilePicture } = useAuth()
     const [error, setError] = useState("")
+    const [ success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false)
     const history = useHistory()
 
@@ -26,6 +28,18 @@ export default function UpdateProfile() {
         setLoading(true)
         setError("")
 
+        if (usernameRef.current.value !== currentUser.displayName) {
+            
+            checkIfUsernameExists(usernameRef.current.value).then((exist) => {
+                if(exist) {
+                    setError("username already exist");
+                } else {
+                    promises.push(updateUsername(usernameRef.current.value))
+                    setSuccess("Successfull updated username")
+                }
+            })
+        }
+
         if (emailRef.current.value !== currentUser.email) {
             promises.push(updateEmail(emailRef.current.value))
         }
@@ -36,7 +50,7 @@ export default function UpdateProfile() {
 
         Promise.all(promises)
             .then(() => {
-                history.push('/profile')
+                //history.push('/profile')
             })
             .catch(() => {
                 setError('Failed to update Account')
@@ -66,19 +80,21 @@ export default function UpdateProfile() {
             })
         }
     }
-
+    //console.log(currentUser)
 
     useEffect(() => {
 
         if (currentUser.photoURL) {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
                 setProfilePicture(url);
-                console.log('successfully loaded profile picture')
+                //console.log('successfully loaded profile picture')
             })
         } else {
             return;
         }
-    }, [loadProfilePicture])
+
+
+    }, [currentUser.photoURL, currentUser.uid]) // loadProfilePicture
 
 
 
@@ -88,6 +104,7 @@ export default function UpdateProfile() {
                 <Card.Body>
                     <h2 className="text-center mb-4">Update Profile</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
+                    {success && <Alert variant="success">{success}</Alert>}
                     <Form onSubmit={handleSubmit}>
                         <Form.Group id="profilePicture">
                             <Form.Label>Select Profile Picture</Form.Label>
@@ -105,7 +122,15 @@ export default function UpdateProfile() {
                             </div>
                         </Form.Group>
 
-
+                        <Form.Group id="username">
+                            <Form.Label>Username</Form.Label>
+                            <Form.Control
+                                type="username"
+                                ref={usernameRef}
+                                required
+                                defaultValue={currentUser.displayName}
+                            />
+                        </Form.Group>
                         <Form.Group id="email">
                             <Form.Label>Email</Form.Label>
                             <Form.Control

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { auth }  from '../../firebase'
+import firebase, { auth } from '../../firebase'
 
 const AuthContext = React.createContext()
 
@@ -12,8 +12,24 @@ export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState()
     const [loading, setLoading] = useState(true)
 
-    function signup(email, password) {
-        return auth.createUserWithEmailAndPassword(email, password)
+    function signup(username, email, password) {
+        return auth.createUserWithEmailAndPassword(email, password).then((obj) => {
+            firebase.database().ref('users/').child(obj.user.uid).set({
+                email: email,
+                name: username,
+                username: username
+            }).then(() => {
+                obj.user.updateProfile({
+                    displayName: username
+                })
+            })
+            firebase.database().ref('usernames/').child(username).set({
+                userId: obj.user.uid
+            })
+        }).catch((error) => {
+            console.log(error.message);
+        })
+
     }
 
     function login(email, password) {
@@ -37,17 +53,45 @@ export function AuthProvider({ children }) {
     }
 
     function loadProfilePicture(profilePicture) {
-        console.log(currentUser.photoURL);
         profilePicture = currentUser.photoURL;
-        console.log(profilePicture);
         return profilePicture;
- 
     }
 
     function updateProfilePicture(profilePicture) {
-        currentUser.updateProfile({ photoURL: profilePicture});
+        currentUser.updateProfile({ photoURL: profilePicture });
         console.log("Photo in Database uploaded " + currentUser.photoURL);
-        console.log("currentUser.photoUrl updated")
+    }
+
+    function updateUsername(username) {
+        let oldUsername = currentUser.displayName;
+
+        // add new username to usernames list
+        let newUsername = {}
+        newUsername[username] = currentUser.uid;
+        firebase.database().ref('usernames/').update(newUsername);
+
+        //add new username to users list
+        firebase.database().ref('users/').child(currentUser.uid).update({
+            "name": username,
+            "username": username,
+        });
+        currentUser.updateProfile({ displayName: username });
+
+        // remove old username
+        firebase.database().ref(`usernames/${oldUsername}`).remove()       
+    }
+
+    async function checkIfUsernameExists(username) {
+        var result = false;
+        
+        await firebase.database().ref(`usernames/${username}`).once("value", (snapshot) => {
+            if (snapshot.val()) {
+                result = true;
+                console.log("result " + result);
+                return result;
+            }
+        })
+        return result;
     }
 
     useEffect(() => {
@@ -59,7 +103,7 @@ export function AuthProvider({ children }) {
         return unsubscribe
     }, [])
 
-    
+
     const value = {
         currentUser,
         signup,
@@ -68,6 +112,8 @@ export function AuthProvider({ children }) {
         resetPassword,
         updateEmail,
         updatePassword,
+        updateUsername,
+        checkIfUsernameExists,
         loadProfilePicture,
         updateProfilePicture,
     }

@@ -11,6 +11,7 @@ export default function Profile() {
     const history = useHistory()
 
     const [profilePicture, setProfilePicture] = useState(currentUser.photoURL);
+    const [username, setUsername] = useState(null);
 
     async function handleLogout() {
         setError('')
@@ -26,14 +27,20 @@ export default function Profile() {
 
 
     useEffect(() => {
+        // load profile picture
         if (profilePicture) {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
                 setProfilePicture(url);
-                console.log('successfully loaded profilePicture')
-             })
-        } else {
-             return;
+            })
         }
+
+        firebase.database().ref('users/' + currentUser.uid).once('value').then((snapshot) => {
+            setUsername(snapshot.val() && snapshot.val().username);
+            // console.log(currentUser.uid);
+            // console.log(username);
+            // console.log(snapshot);
+        })
+
     })
 
 
@@ -51,6 +58,9 @@ export default function Profile() {
                             height="150px"
                             alt="avatar"
                         />
+                    </div>
+                    <div className="mt-2 mb-3">
+                        <strong>Username: </strong> {username}
                     </div>
                     <strong>Email:</strong> {currentUser.email}
                     <Link to="update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
