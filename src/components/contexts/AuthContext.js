@@ -23,9 +23,11 @@ export function AuthProvider({ children }) {
                     displayName: username
                 })
             })
-            firebase.database().ref('usernames/').child(username).set({
-                userId: obj.user.uid
-            })
+            // add new username to usernames list
+            let newUsername = {}
+            newUsername[username] = obj.user.uid;
+            //console.log("newUsername "+ newUsername);
+            firebase.database().ref('usernames/').update(newUsername);
         }).catch((error) => {
             console.log(error.message);
         })
@@ -78,16 +80,16 @@ export function AuthProvider({ children }) {
         currentUser.updateProfile({ displayName: username });
 
         // remove old username
-        firebase.database().ref(`usernames/${oldUsername}`).remove()       
+        firebase.database().ref(`usernames/${oldUsername}`).remove()
     }
 
     async function checkIfUsernameExists(username) {
         var result = false;
-        
+
         await firebase.database().ref(`usernames/${username}`).once("value", (snapshot) => {
             if (snapshot.val()) {
                 result = true;
-                console.log("result " + result);
+                //console.log("result " + result);
                 return result;
             }
         })
