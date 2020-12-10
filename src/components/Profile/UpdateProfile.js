@@ -83,7 +83,7 @@ export default function UpdateProfile() {
     //console.log(currentUser)
 
     useEffect(() => {
-
+        //load avatar from storage
         if (currentUser.photoURL) {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
                 setProfilePicture(url);
@@ -161,7 +161,7 @@ export default function UpdateProfile() {
                 </Card.Body>
             </Card>
             <div className="w-100 text-center mt-2">
-                <Link to="/profile">Back to profile</Link>
+                <Link to={`${currentUser.displayName}/profile`}>Back to profile</Link>
             </div>
         </>
     )

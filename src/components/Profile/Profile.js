@@ -36,9 +36,6 @@ export default function Profile() {
 
         firebase.database().ref('users/' + currentUser.uid).once('value').then((snapshot) => {
             setUsername(snapshot.val() && snapshot.val().username);
-            // console.log(currentUser.uid);
-            // console.log(username);
-            // console.log(snapshot);
         })
 
     })
@@ -63,7 +60,8 @@ export default function Profile() {
                         <strong>Username: </strong> {username}
                     </div>
                     <strong>Email:</strong> {currentUser.email}
-                    <Link to="update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
+                    <Link to="/update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
+                    <Link to="/search-users" className="btn btn-primary w-100 mt-3">Search Users</Link>
                 </Card.Body>
             </Card>
             <div className="w-100 text-center mt-2">

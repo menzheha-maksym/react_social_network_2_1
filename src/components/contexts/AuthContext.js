@@ -17,7 +17,8 @@ export function AuthProvider({ children }) {
             firebase.database().ref('users/').child(obj.user.uid).set({
                 email: email,
                 name: username,
-                username: username
+                photoURL: "http://via.placeholder.com/300", 
+                username: username          
             }).then(() => {
                 obj.user.updateProfile({
                     displayName: username
@@ -61,6 +62,9 @@ export function AuthProvider({ children }) {
 
     function updateProfilePicture(profilePicture) {
         currentUser.updateProfile({ photoURL: profilePicture });
+        firebase.database().ref('users/').child(currentUser.uid).update({
+            "photoURL": profilePicture
+        });
         console.log("Photo in Database uploaded " + currentUser.photoURL);
     }
 
@@ -89,7 +93,6 @@ export function AuthProvider({ children }) {
         await firebase.database().ref(`usernames/${username}`).once("value", (snapshot) => {
             if (snapshot.val()) {
                 result = true;
-                //console.log("result " + result);
                 return result;
             }
         })

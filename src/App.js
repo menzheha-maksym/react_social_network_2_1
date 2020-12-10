@@ -9,6 +9,8 @@ import Dashboard from './components/Profile/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import UpdateProfile from "./components/Profile/UpdateProfile";
 import Profile from './components/Profile/Profile';
+import SearchUsers from "./components/search/SearchUsers";
+import Error from "./components/Error"
 
 
 function App() {
@@ -19,11 +21,13 @@ function App() {
           <AuthProvider>
             <Switch>
               <PrivateRoute exact path="/" component={Dashboard} />
-              <PrivateRoute path="/profile" component={Profile} />
+              <PrivateRoute exact path="/:username/profile" component={Profile} />
               <PrivateRoute path="/update-profile" component={UpdateProfile} />
+              <PrivateRoute path="/search-users" component={SearchUsers} />
               <Route path="/signup" component={Signup} />
               <Route path="/login" component={Login} />
               <Route path="/forgot-password" component={ForgotPassword} />
+              <Route path="*" component={Error}/>
             </Switch>
           </AuthProvider>
         </Router>
