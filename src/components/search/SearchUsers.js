@@ -3,6 +3,7 @@ import { Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext'
 import firebase from '../../firebase';
+import Results from './Results';
 
 export default function SearchUsers() {
 
@@ -14,6 +15,7 @@ export default function SearchUsers() {
     const [foundUser_email, setFoundUser_email] = useState(null);
     const [profilePicture, setProfilePicture] = useState(null);
     const [error, setError] = useState('');
+    const [data, setData] = useState([]);
 
 
     function handleSearch(e) {
@@ -37,6 +39,15 @@ export default function SearchUsers() {
         }
     }
 
+    function checkNotNull(obj) {
+        for (var key in obj) {
+            if (obj[key] === null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     useEffect(() => {
 
         if (foundUser_uid) {
@@ -48,10 +59,23 @@ export default function SearchUsers() {
                 setFoundUser_email(snapshot.val().email);
             })
 
+            let value = {
+                profile_pic: profilePicture,
+                username: foundUser_username,
+                email: foundUser_email,
+            }
+
+            if (checkNotNull(value)) {
+                setData([{
+                    profile_pic: profilePicture,
+                    username: foundUser_username,
+                    email: foundUser_email
+                }]);
+            }
         }
         setLoading(false);
 
-    }, [handleSearch])
+    }, [foundUser_uid, foundUser_email, foundUser_username, loading, profilePicture])
 
     return (
         <>
@@ -79,19 +103,7 @@ export default function SearchUsers() {
             <Card>
                 <Card.Body>
                     <h1>Results</h1>
-                    <div className="profile mr-3">
-                        <img
-                            src={profilePicture || "http://via.placeholder.com/300"}
-                            className="rounded mb-2 mx-auto d-block"
-                            width="200px"
-                            height="150px"
-                            alt="avatar"
-                        />
-                    </div>
-                    <div className="mt-2 mb-3">
-                        <strong>Username: </strong> {foundUser_username}
-                    </div>
-                    <strong>Email:</strong> {foundUser_email}
+                    <Results data={data} />
                 </Card.Body>
             </Card>
         </>
