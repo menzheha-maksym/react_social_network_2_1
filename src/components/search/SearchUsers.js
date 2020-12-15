@@ -39,6 +39,7 @@ export default function SearchUsers() {
         }
     }
 
+    // check if all items are not null
     function checkNotNull(obj) {
         for (var key in obj) {
             if (obj[key] === null) {

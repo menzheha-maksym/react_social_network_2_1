@@ -3,6 +3,7 @@ import { Button, Card, Alert } from 'react-bootstrap'
 import { Link, useHistory } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import firebase from '../../firebase'
+import UserPosts from './UserPosts';
 
 export default function Profile() {
 
@@ -12,6 +13,10 @@ export default function Profile() {
 
     const [profilePicture, setProfilePicture] = useState(currentUser.photoURL);
     const [username, setUsername] = useState(null);
+
+    const [postsUrl, setPostsUrl] = useState([]);
+    const [postsLength, setPostsLength] = useState(null);
+    const [posts, setPosts] = useState([]);
 
     async function handleLogout() {
         setError('')
@@ -33,12 +38,34 @@ export default function Profile() {
                 setProfilePicture(url);
             })
         }
-
+        // load username
         firebase.database().ref('users/' + currentUser.uid).once('value').then((snapshot) => {
             setUsername(snapshot.val() && snapshot.val().username);
         })
 
-    })
+    }, [])
+
+    useEffect(() => {
+
+        firebase.storage().ref(`users/` + currentUser.uid).child('/posts/').listAll().then((res) => {
+            setPostsLength(res.items.length);
+            res.items.forEach((item) => {
+                setPostsUrl(postsUrl => [...postsUrl, item.location.path]);
+            })
+        })
+    }, [])
+
+    useEffect(() => {
+        
+        if (postsUrl.length === postsLength) {
+            postsUrl.forEach(value => {
+                firebase.storage().ref(value).getDownloadURL().then(url => {
+                    setPosts(posts => [...posts, url]);
+                })
+            })
+
+        }
+    }, [postsUrl])
 
 
     return (
@@ -65,6 +92,12 @@ export default function Profile() {
                     {/* <Link to="/dialogs" className="btn btn-primary w-100 mt-3">Dialogs</Link> */}
                     <Link to="/upload" className="btn btn-primary w-100 mt-3">Upload</Link>
                     {/* <Button className="w-100 mt-3">Upload</Button> */}
+                </Card.Body>
+            </Card>
+            <Card>
+                <Card.Body>
+                    <h3 className="text-center mb-4">User Posts</h3>
+                    <UserPosts data={posts}/>
                 </Card.Body>
             </Card>
             <div className="w-100 text-center mt-2">
