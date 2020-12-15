@@ -62,6 +62,9 @@ export default function Profile() {
                     <strong>Email:</strong> {currentUser.email}
                     <Link to="/update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
                     <Link to="/search-users" className="btn btn-primary w-100 mt-3">Search Users</Link>
+                    {/* <Link to="/dialogs" className="btn btn-primary w-100 mt-3">Dialogs</Link> */}
+                    <Link to="/upload" className="btn btn-primary w-100 mt-3">Upload</Link>
+                    {/* <Button className="w-100 mt-3">Upload</Button> */}
                 </Card.Body>
             </Card>
             <div className="w-100 text-center mt-2">
