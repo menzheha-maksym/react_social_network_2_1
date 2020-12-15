@@ -27,7 +27,6 @@ export function AuthProvider({ children }) {
             // add new username to usernames list
             let newUsername = {}
             newUsername[username] = obj.user.uid;
-            //console.log("newUsername "+ newUsername);
             firebase.database().ref('usernames/').update(newUsername);
         }).catch((error) => {
             console.log(error.message);

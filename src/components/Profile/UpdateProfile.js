@@ -9,7 +9,7 @@ export default function UpdateProfile() {
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
-    const { currentUser, updatePassword, updateEmail, updateUsername, checkIfUsernameExists, /* loadProfilePicture, */ updateProfilePicture } = useAuth()
+    const { currentUser, updatePassword, updateEmail, updateUsername, checkIfUsernameExists, updateProfilePicture } = useAuth()
     const [error, setError] = useState("")
     const [ success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false)
@@ -80,14 +80,12 @@ export default function UpdateProfile() {
             })
         }
     }
-    //console.log(currentUser)
 
     useEffect(() => {
         //load avatar from storage
         if (currentUser.photoURL) {
             firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
                 setProfilePicture(url);
-                //console.log('successfully loaded profile picture')
             })
         } else {
             return;

@@ -11,8 +11,6 @@ import UpdateProfile from "./components/Profile/UpdateProfile";
 import Profile from './components/Profile/Profile';
 import SearchUsers from "./components/search/SearchUsers";
 import Error from "./components/Error";
-// import Dialogs from './components/dialogs/Dialogs';
-// import Dialog from './components/dialogs/Dialog';
 import Upload from './components/upload/Upload';
 
 
@@ -28,8 +26,6 @@ function App() {
               <PrivateRoute path="/update-profile" component={UpdateProfile} />
               <PrivateRoute path="/search-users" component={SearchUsers} />
               <PrivateRoute path="/upload" component={Upload} />
-              {/* <PrivateRoute path="/dialogs" component={Dialogs} /> */}
-              {/* <PrivateRoute path="/dialog" component={Dialog} /> */}
               <Route path="/signup" component={Signup} />
               <Route path="/login" component={Login} />
               <Route path="/forgot-password" component={ForgotPassword} />

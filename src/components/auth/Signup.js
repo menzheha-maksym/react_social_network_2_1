@@ -35,7 +35,6 @@ export default function Singup() {
                 }
             })
 
-            //     history.push("/")
         } catch (error) {
             console.log(error.message)
             setError('Failed to create an account')
