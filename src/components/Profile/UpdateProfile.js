@@ -1,16 +1,22 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Card, Form, Button, Alert } from 'react-bootstrap'
 import { useAuth } from '../contexts/AuthContext'
 import { Link, useHistory } from 'react-router-dom'
+import firebase from '../../firebase'
 
 export default function UpdateProfile() {
+    const usernameRef = useRef(); // Can't perform a React state update 
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
-    const { currentUser, updatePassword, updateEmail } = useAuth() // must be in scopes { signup }
+    const { currentUser, updatePassword, updateEmail, updateUsername, checkIfUsernameExists, updateProfilePicture } = useAuth()
     const [error, setError] = useState("")
+    const [ success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false)
     const history = useHistory()
+
+    const [profilePicture, setProfilePicture] = useState(null);
+    const [file, setFile] = useState(null);
 
     function handleSubmit(e) {
         e.preventDefault()
@@ -22,6 +28,18 @@ export default function UpdateProfile() {
         setLoading(true)
         setError("")
 
+        if (usernameRef.current.value !== currentUser.displayName) {
+            
+            checkIfUsernameExists(usernameRef.current.value).then((exist) => {
+                if(exist) {
+                    setError("username already exist");
+                } else {
+                    promises.push(updateUsername(usernameRef.current.value))
+                    setSuccess("Successfull updated username")
+                }
+            })
+        }
+
         if (emailRef.current.value !== currentUser.email) {
             promises.push(updateEmail(emailRef.current.value))
         }
@@ -32,7 +50,7 @@ export default function UpdateProfile() {
 
         Promise.all(promises)
             .then(() => {
-                history.push('/')
+                //history.push('/profile')
             })
             .catch(() => {
                 setError('Failed to update Account')
@@ -43,13 +61,74 @@ export default function UpdateProfile() {
 
     }
 
+    const handleChange = e => {
+        if (e.target.files[0]) {
+            setFile(e.target.files[0]);
+            setProfilePicture(URL.createObjectURL(e.target.files[0]));
+        }
+    }
+
+    const handleUpload = () => {
+        console.log(file);
+        if (file === null) {
+            setError("No file selected");
+        } else {
+            firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').put(file).then(function () {
+                console.log('successfully uploaded to firebase');
+                updateProfilePicture('users/' + currentUser.uid + '/profile.jpg');
+                setError("");
+            })
+        }
+    }
+
+    useEffect(() => {
+        //load avatar from storage
+        if (currentUser.photoURL) {
+            firebase.storage().ref('users/' + currentUser.uid + '/profile.jpg').getDownloadURL().then(url => {
+                setProfilePicture(url);
+            })
+        } else {
+            return;
+        }
+
+
+    }, [currentUser.photoURL, currentUser.uid]) // loadProfilePicture
+
+
+
     return (
         <>
             <Card>
                 <Card.Body>
                     <h2 className="text-center mb-4">Update Profile</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
+                    {success && <Alert variant="success">{success}</Alert>}
                     <Form onSubmit={handleSubmit}>
+                        <Form.Group id="profilePicture">
+                            <Form.Label>Select Profile Picture</Form.Label>
+                            <input type="file" accept="image/*" onChange={handleChange} />
+                            <div className="profile mt-3">
+                                <img
+                                    id="output"
+                                    src={profilePicture || "http://via.placeholder.com/300"}
+                                    className="rounded mb-2 mx-auto d-block"
+                                    width="200px"
+                                    height="150px"
+                                    alt="profilePic"
+                                />
+                                <Button className="mt-2" onClick={handleUpload}>Update Profile Picture</Button>
+                            </div>
+                        </Form.Group>
+
+                        <Form.Group id="username">
+                            <Form.Label>Username</Form.Label>
+                            <Form.Control
+                                type="username"
+                                ref={usernameRef}
+                                required
+                                defaultValue={currentUser.displayName}
+                            />
+                        </Form.Group>
                         <Form.Group id="email">
                             <Form.Label>Email</Form.Label>
                             <Form.Control
@@ -80,7 +159,7 @@ export default function UpdateProfile() {
                 </Card.Body>
             </Card>
             <div className="w-100 text-center mt-2">
-                <Link to="/">Cancel</Link>
+                <Link to={`${currentUser.displayName}/profile`}>Back to profile</Link>
             </div>
         </>
     )
